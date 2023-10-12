@@ -12,13 +12,12 @@ public class Query {
         this.M = M;
         this.N = N;
         this.grid = grid;
-        this.words = words;
+        this.words = new ArrayList<>(words);
+        Collections.sort(this.words);
     }
 
     public List<String> getWords() {
-        List<String> sortedWords = new ArrayList<>(words);
-        Collections.sort(sortedWords);
-        return sortedWords;
+        return words;
     }
 
     public List<List<int[]>> findWordPaths(String word) {
@@ -27,7 +26,8 @@ public class Query {
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
                 if (grid[i][j] == wordChars[0]) {
-                    dfs(i, j, 0, wordChars, new ArrayList<>(), paths);
+                    List<int[]> path = new ArrayList<>();
+                    dfs(i, j, 0, wordChars, path, paths);
                 }
             }
         }
@@ -35,19 +35,21 @@ public class Query {
     }
 
     private void dfs(int x, int y, int index, char[] wordChars, List<int[]> path, List<List<int[]>> paths) {
-        if (x < 0 || x >= M || y < 0 || y >= N || grid[x][y] != wordChars[index]) {
-            return;
-        }
-        if (index == wordChars.length - 1) {
-            path.add(new int[]{x, y});
-            paths.add(new ArrayList<>(path));
-            path.remove(path.size() - 1);
-            return;
-        }
+        if (x < 0 || x >= M || y < 0 || y >= N) return;
+        
+        char currentChar = grid[x][y];
+        if (currentChar != wordChars[index]) return;
+        
         path.add(new int[]{x, y});
-        for (int i = 0; i < 9; i++) {
-            dfs(x + DX[i], y + DY[i], index + 1, wordChars, path, paths);
+        
+        if (index == wordChars.length - 1) {
+            paths.add(new ArrayList<>(path));
+        } else {
+            for (int i = 0; i < 9; i++) {
+                dfs(x + DX[i], y + DY[i], index + 1, wordChars, path, paths);
+            }
         }
+        
         path.remove(path.size() - 1);
     }
 }
