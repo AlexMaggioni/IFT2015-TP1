@@ -62,7 +62,7 @@ public class Main {
         StringBuilder output = new StringBuilder();
         // Traitement des requêtes
         for (Query query : reader.getQueries()) {
-            output.append("Requête ").append(queryNumber).append("\n");
+            output.append("Query ").append(queryNumber).append(":\n");
             for (String word : query.getWords()) {
                 for (String path : query.findWordPaths(word)) {
                     output.append(word).append(" ").append(path).append("\n");
