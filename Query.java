@@ -20,36 +20,41 @@ public class Query {
         return words;
     }
 
-    public List<List<int[]>> findWordPaths(String word) {
+    public List<String> findWordPaths(String word) {
         char[] wordChars = word.toCharArray();
-        List<List<int[]>> paths = new ArrayList<>();
+        List<String> paths = new ArrayList<>();
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
                 if (grid[i][j] == wordChars[0]) {
-                    List<int[]> path = new ArrayList<>();
+                    StringBuilder path = new StringBuilder();
                     dfs(i, j, 0, wordChars, path, paths);
                 }
             }
         }
+        Collections.sort(paths);  // Sorting the paths
         return paths;
     }
+    
 
-    private void dfs(int x, int y, int index, char[] wordChars, List<int[]> path, List<List<int[]>> paths) {
+    private void dfs(int x, int y, int index, char[] wordChars, StringBuilder path, List<String> paths) {
         if (x < 0 || x >= M || y < 0 || y >= N) return;
-        
+    
         char currentChar = grid[x][y];
         if (currentChar != wordChars[index]) return;
-        
-        path.add(new int[]{x, y});
-        
+    
+        int pathLength = path.length();
+        path.append("(").append(x).append(",").append(y).append(")");
+    
         if (index == wordChars.length - 1) {
-            paths.add(new ArrayList<>(path));
+            paths.add(path.toString());  
         } else {
+            path.append("->");
             for (int i = 0; i < 9; i++) {
                 dfs(x + DX[i], y + DY[i], index + 1, wordChars, path, paths);
             }
         }
-        
-        path.remove(path.size() - 1);
+    
+        path.setLength(pathLength); // Revert the path to its previous state
     }
+    
 }

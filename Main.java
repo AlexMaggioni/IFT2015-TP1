@@ -31,9 +31,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-
-        long startTime = System.currentTimeMillis();
-
         if (args.length < 1) {
             System.out.println("Please provide the input filename.");
             return;
@@ -42,25 +39,14 @@ public class Main {
         int queryNumber = 1;
         StringBuilder output = new StringBuilder();
         for (Query query : reader.getQueries()) {
-            output.append("Query ").append(queryNumber).append(":\n");
+            output.append("Query ").append(queryNumber).append("\n");
             for (String word : query.getWords()) {
-                for (List<int[]> path : query.findWordPaths(word)) {
-                    output.append(word).append(" ");
-                    for (int i = 0; i < path.size(); i++) {
-                        output.append("(").append(path.get(i)[0]).append(",").append(path.get(i)[1]).append(")");
-                        if (i < path.size() - 1) {
-                            output.append("->");
-                        }
-                    }
-                    output.append("\n");
+                for (String path : query.findWordPaths(word)) {  // This is now a String
+                    output.append(word).append(" ").append(path).append("\n");
                 }
             }
             queryNumber++;
-        }
-        System.out.println(output);
-
-        long endTime = System.currentTimeMillis();
-        long executionTime = endTime - startTime;
-        System.out.println("\nExecution time: " + executionTime + " milliseconds");
+        }        
+        System.out.print(output);
     }
 }
