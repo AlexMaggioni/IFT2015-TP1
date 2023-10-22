@@ -1,66 +1,127 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class Main {
-    private final List<Query> queries = new ArrayList<>();
 
-    public Main(String filename) {
+    private static int N, M;
+    private static char[][] grid;
+    private static String[] words;
+    private static Map<String, List<String>> wordDictionary = new HashMap<>();
+    private static int[] dx = {-1, -1, -1,  0,  0,  0,  1,  1,  1};
+    private static int[] dy = {-1,  0,  1,  1,  0,  -1,  1,  0, -1};
+
+    private static List<Query> readInput(String filename) throws IOException {
+        List<Query> queries = new ArrayList<>();
+    
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
-            while ((line = br.readLine()) != null && !line.trim().isEmpty()) {
-                String[] parts = line.split(" ");
-                int M = Integer.parseInt(parts[0]);
-                int N = Integer.parseInt(parts[1]);
-                char[][] grid = new char[M][N];
-                for (int i = 0; i < M; i++) {
-                    grid[i] = br.readLine().replace(" ", "").toCharArray();  // Reverted the change here
-                }
-                List<String> words = List.of(br.readLine().split(" "));
-                queries.add(new Query(M, N, grid, words));
-            }
-        } catch (IOException e) {
-            System.err.println("Error reading the file: " + e.getMessage());
-        }
-    }
-
-    public List<Query> getQueries() {
-        return queries;
-    }
-
-    public static void main(String[] args) {
-
-        long startTime = System.currentTimeMillis();
-
-        if (args.length < 1) {
-            System.out.println("Please provide the input filename.");
-            return;
-        }
-        Main reader = new Main(args[0]);
-        int queryNumber = 1;
-        StringBuilder output = new StringBuilder();
-        for (Query query : reader.getQueries()) {
-            output.append("Query ").append(queryNumber).append(":\n");
-            for (String word : query.getWords()) {
-                for (List<int[]> path : query.findWordPaths(word)) {
-                    output.append(word).append(" ");
-                    for (int i = 0; i < path.size(); i++) {
-                        output.append("(").append(path.get(i)[0]).append(",").append(path.get(i)[1]).append(")");
-                        if (i < path.size() - 1) {
-                            output.append("->");
-                        }
+            while ((line = br.readLine()) != null) {
+                String[] dimensions = line.split(" ");
+                int N = Integer.parseInt(dimensions[0]);
+                int M = Integer.parseInt(dimensions[1]);
+    
+                char[][] grid = new char[N][M];
+                for (int i = 0; i < N; i++) {
+                    line = br.readLine();
+                    for (int j = 0; j < M; j++) {
+                        grid[i][j] = line.charAt(2 * j); // every other character is a space
                     }
-                    output.append("\n");
+                }
+                String[] words = br.readLine().split(" ");
+    
+                queries.add(new Query(N, M, grid, words));
+            }
+        }
+    
+        return queries;
+    }    
+
+    private static String formatPath(StringBuilder path) {
+        String str = path.toString();
+        if (str.endsWith("->")) {
+            return str.substring(0, str.length() - 2);
+        }
+        return str;
+    }
+
+    private static void search() {
+        Trie trie = new Trie(words);
+        Trie.TrieNode root = trie.getRoot();
+
+        Set<Character> startingChars = root.children.keySet();
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < M; j++) {
+                if (startingChars.contains(grid[i][j])) {
+                    dfs(i, j, root.children.get(grid[i][j]), new StringBuilder());
                 }
             }
-            queryNumber++;
-        }
-        System.out.println(output);
-
-        long endTime = System.currentTimeMillis();
-        long executionTime = endTime - startTime;
-        System.out.println("\nExecution time: " + executionTime + " milliseconds");
+        }        
     }
+
+    private static void dfs(int i, int j, Trie.TrieNode node, StringBuilder path) {
+        if (i < 0 || i >= N || j < 0 || j >= M) return;
+    
+        path.append("(" + i + "," + j + ")->");
+    
+        if (node.isWord) {
+            wordDictionary.putIfAbsent(node.word, new ArrayList<>());
+            wordDictionary.get(node.word).add(formatPath(path));
+        }
+    
+        int originalLength = path.length();
+        for (int d = 0; d < 9; d++) {
+            int x = i + dx[d];
+            int y = j + dy[d];
+    
+            if (x >= 0 && x < N && y >= 0 && y < M && node.children.containsKey(grid[x][y])) {
+                dfs(x, y, node.children.get(grid[x][y]), path);
+                path.setLength(originalLength); // Reset the path
+            }
+        }
+    }    
+
+    public static void main(String[] args) throws IOException {
+        long startTime = System.currentTimeMillis();  // Start recording the time
+    
+        List<Query> queries = readInput(args[0]);
+    
+        for (int queryNum = 1; queryNum <= queries.size(); queryNum++) {
+            Query query = queries.get(queryNum - 1);
+            
+            N = query.N;
+            M = query.M;
+            grid = query.grid;
+            words = query.words;
+    
+            wordDictionary.clear();  // Clear previous query results
+            search();
+            
+            System.out.println("Query " + queryNum + ":");
+            
+            // Sorting
+            List<String> sortedOutput = new ArrayList<>();
+            for (Map.Entry<String, List<String>> entry : wordDictionary.entrySet()) {
+                for (String path : entry.getValue()) {
+                    sortedOutput.add(entry.getKey() + " " + path);
+                }
+            }
+            Collections.sort(sortedOutput);
+    
+            for (String line : sortedOutput) {
+                System.out.println(line);
+            }
+        }
+    
+        long endTime = System.currentTimeMillis();
+    
+        System.out.println("Execution time: " + (endTime - startTime) + " milliseconds");
+    }    
+    
 }
