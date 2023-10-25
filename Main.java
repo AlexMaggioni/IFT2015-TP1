@@ -2,7 +2,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Classe principale permettant de lire et de traiter les requêtes à partir d'un fichier donné.
@@ -52,24 +54,51 @@ public class Main {
      *
      * @param args Les arguments de la ligne de commande.
      */
-    public static void main(String[] args) {   
+    public static void main(String[] args) {  
+        
+        // Start time
+        //long startTime = System.currentTimeMillis();
+        
         if (args.length < 1) {
             System.out.println("Veuillez fournir le nom du fichier d'entrée.");
             return;
         }
+
         Main reader = new Main(args[0]);
         int queryNumber = 1;
+
+        // Map pour stocker les paths
+        Map<String, List<String>> wordPathsMap = new HashMap<>();
+        for (Query query : reader.getQueries()) {
+            for (String word : query.getWords()) {
+                List<String> paths = query.findWordPaths(word);
+                wordPathsMap.put(word, paths);
+            }
+        }
+        
+        // Imprimer les paths
         StringBuilder output = new StringBuilder();
-        // Traitement des requêtes
         for (Query query : reader.getQueries()) {
             output.append("Query ").append(queryNumber).append(":\n");
             for (String word : query.getWords()) {
-                for (String path : query.findWordPaths(word)) {
+                for (String path : wordPathsMap.get(word)) {
                     output.append(word).append(" ").append(path).append("\n");
                 }
             }
             queryNumber++;
-        }        
+        }
+
+        // Remove the last newline character
+        if (output.length() > 0 && output.charAt(output.length() - 1) == '\n') {
+            output.deleteCharAt(output.length() - 1);
+        }
+
+        // End time
+        //long endTime = System.currentTimeMillis();
+        //long runningTimeInMilliseconds = endTime - startTime;
+
         System.out.print(output);
-    }   
+        //System.out.print("Running time: " + runningTimeInMilliseconds + " milliseconds");
+    }
+ 
 }
