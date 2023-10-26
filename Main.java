@@ -1,10 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Classe principale permettant de lire et de traiter les requêtes à partir d'un fichier donné.
@@ -32,7 +29,7 @@ public class Main {
                     grid[i] = br.readLine().replace(" ", "").toCharArray();
                 }
                 // Récupération des mots
-                List<String> words = List.of(br.readLine().split(" "));
+                List<String> words = Arrays.asList(br.readLine().split(" "));
                 queries.add(new Query(M, N, grid, words));
             }
         } catch (IOException e) {
@@ -55,9 +52,6 @@ public class Main {
      * @param args Les arguments de la ligne de commande.
      */
     public static void main(String[] args) {  
-        
-        // Start time
-        //long startTime = System.currentTimeMillis();
         
         if (args.length < 1) {
             System.out.println("Veuillez fournir le nom du fichier d'entrée.");
@@ -93,12 +87,7 @@ public class Main {
             output.deleteCharAt(output.length() - 1);
         }
 
-        // End time
-        //long endTime = System.currentTimeMillis();
-        //long runningTimeInMilliseconds = endTime - startTime;
-
         System.out.print(output);
-        //System.out.print("Running time: " + runningTimeInMilliseconds + " milliseconds");
     }
  
 }
